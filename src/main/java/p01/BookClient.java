@@ -1,13 +1,17 @@
 package p01;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class BookClient {
 
     static Scanner scanner = new Scanner(System.in);
-    private static final ArrayList<Book> books = new ArrayList<>();
+    private static ArrayList<Book> books = new ArrayList<>();
 
     public static void main(String[] args) {
 
@@ -22,7 +26,7 @@ public class BookClient {
                 "ISBN987654321",
                 "Lisa",
                 "Schmidt",
-                "Alles ode nichts")
+                "Alles oder nichts")
         );
 
         int input = -1;
@@ -107,10 +111,8 @@ public class BookClient {
      */
     public static void saveBooks() {
         try {
-            ObjectOutputStream objectOutputStream =
-                    new ObjectOutputStream(new FileOutputStream("books.txt"));
-            objectOutputStream.writeObject(books);
-            objectOutputStream.close();
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(new File("books.json"), books);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -120,18 +122,14 @@ public class BookClient {
     /**
      * loads the books from the file given as field
      */
-    @SuppressWarnings("unchecked")
     public static void loadBooks() {
         try {
-            ObjectInputStream objectInputStream =
-                    new ObjectInputStream(new FileInputStream("books.txt"));
-
-            ArrayList<Book> loadedBooks = (ArrayList<Book>) objectInputStream.readObject();
-
-            books.clear();
-            books.addAll(loadedBooks);
-            objectInputStream.close();
-        } catch (IOException | ClassNotFoundException e) {
+            ObjectMapper mapper = new ObjectMapper();
+            books = new ArrayList<>(
+                    mapper.readValue(new File("books.json"), new TypeReference<List<Book>>() {
+                    })
+            );
+        } catch (IOException e) {
             e.printStackTrace();
         }
         System.out.println("\n -- loaded all books --\n");
